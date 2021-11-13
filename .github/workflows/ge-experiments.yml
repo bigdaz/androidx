@@ -41,6 +41,9 @@ jobs:
           fi
           echo "::set-output name=repository::$REPOSITORY"
 
+      - name: Publish build scans link
+        run: echo "::notice ::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
+
   warm-up:
     runs-on: ubuntu-latest
     needs: [setup]

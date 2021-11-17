@@ -152,24 +152,24 @@ jobs:
             **/libs.versions.toml
           dependencies-cache-exact: false
           distributions-cache-enabled: true
-      - name: "./gradlew clean buildOnServer"
+      - name: "./gradlew clean buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer --no-build-cache -Dscan.tag.exp1 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test --no-build-cache -Dscan.tag.exp1 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
           distributions-cache-enabled: false
-      - name: "./gradlew buildOnServer"
+      - name: "./gradlew buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: buildOnServer --no-build-cache -Dscan.tag.exp1 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: buildOnServer zipTestConfigsWithApks test --no-build-cache -Dscan.tag.exp1 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
@@ -238,24 +238,24 @@ jobs:
             **/libs.versions.toml
           dependencies-cache-exact: false
           distributions-cache-enabled: true
-      - name: "first clean buildOnServer"
+      - name: "first clean buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
           distributions-cache-enabled: false
-      - name: "second clean buildOnServer"
+      - name: "second clean buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
@@ -332,24 +332,24 @@ jobs:
             **/libs.versions.toml
           dependencies-cache-exact: false
           distributions-cache-enabled: true
-      - name: "checkout-1 clean buildOnServer"
+      - name: "checkout-1 clean buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: checkout-1/${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
           distributions-cache-enabled: false
-      - name: "checkout-2 clean buildOnServer"
+      - name: "checkout-2 clean buildOnServer zipTestConfigsWithApks test"
         uses: gradle/gradle-command-action@v1
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: checkout-2/${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false

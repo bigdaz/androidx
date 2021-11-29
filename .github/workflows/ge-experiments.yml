@@ -20,8 +20,7 @@ jobs:
             -Dorg.gradle.internal.repository.max.retries=20                 \
             -Dorg.gradle.internal.repository.initial.backoff=500            \
             -Dorg.gradle.jvmargs=-XX:MaxMetaspaceSize=1024m                 \
-            -Dgradle.cache.remote.enabled=false                             \
-            --no-configuration-cache                                       \
+            --no-configuration-cache                                        \
             --stacktrace"
           echo "::set-output name=gradlew_flags::$GRADLEW_FLAGS"
       - name: "Compute actions/checkout arguments"
@@ -48,7 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup]
     env:
-      GRADLE_BUILD_CACHE_PASSWORD: ${{ secrets.GRADLE_BUILD_CACHE_PASSWORD }}
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
     outputs:
       status: ${{ steps.output-status.outputs.status }}
@@ -97,7 +95,6 @@ jobs:
     env:
       artifact-id: ${{matrix.project}}
       project-root: ${{matrix.project-root || matrix.project}}
-      GRADLE_BUILD_CACHE_PASSWORD: ${{ secrets.GRADLE_BUILD_CACHE_PASSWORD }}
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
     steps:
       - name: "Checkout androidx repo"
@@ -178,7 +175,6 @@ jobs:
     env:
       artifact-id: ${{matrix.project}}
       project-root: ${{matrix.project-root || matrix.project}}
-      GRADLE_BUILD_CACHE_PASSWORD: ${{ secrets.GRADLE_BUILD_CACHE_PASSWORD }}
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
     steps:
       - name: "Checkout androidx repo"
@@ -228,7 +224,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dgradle.cache.remote.enabled=false -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
@@ -239,7 +235,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dgradle.cache.remote.enabled=false -Dscan.tag.exp2 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: ${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
@@ -259,7 +255,6 @@ jobs:
     env:
       artifact-id: ${{matrix.project}}
       project-root: ${{matrix.project-root || matrix.project}}
-      GRADLE_BUILD_CACHE_PASSWORD: ${{ secrets.GRADLE_BUILD_CACHE_PASSWORD }}
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
     steps:
       - name: "Checkout androidx repo 1"
@@ -317,7 +312,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dgradle.cache.remote.enabled=false -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: checkout-1/${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false
@@ -328,7 +323,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         with:
-          arguments: clean buildOnServer zipTestConfigsWithApks test -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
+          arguments: clean buildOnServer zipTestConfigsWithApks test -Dgradle.cache.remote.enabled=false -Dscan.tag.exp3 ${{ needs.setup.outputs.gradlew_flags }}
           build-root-directory: checkout-2/${{ env.project-root }}
           configuration-cache-enabled: false
           dependencies-cache-enabled: false

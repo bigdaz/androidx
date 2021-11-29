@@ -60,12 +60,6 @@ jobs:
         with:
           java-version: "11"
 
-      - name: "Set environment variables"
-        shell: bash
-        run: |
-          set -x
-          echo "ANDROID_SDK_ROOT=$HOME/Library/Android/sdk" >> $GITHUB_ENV
-
       - name: "Checkout androidx repo"
         uses: actions/checkout@v2
         with:
@@ -129,11 +123,6 @@ jobs:
         with:
           java-version: "11"
 
-      - name: "Set environment variables"
-        shell: bash
-        run: |
-          set -x
-          echo "ANDROID_SDK_ROOT=$HOME/Library/Android/sdk" >> $GITHUB_ENV
       # gradle action loads the dependencies cache only on the first run based on arguments.
       # to control it, we explicitly invoke it once which makes it load the dependencies cache with the parameters
       # we control
@@ -215,11 +204,6 @@ jobs:
         with:
           java-version: "11"
 
-      - name: "Set environment variables"
-        shell: bash
-        run: |
-          set -x
-          echo "ANDROID_SDK_ROOT=$HOME/Library/Android/sdk" >> $GITHUB_ENV
       # gradle action loads the dependencies cache only on the first run based on arguments.
       # to control it, we explicitly invoke it once which makes it load the dependencies cache with the parameters
       # we control
@@ -309,11 +293,6 @@ jobs:
         with:
           java-version: "11"
 
-      - name: "Set environment variables"
-        shell: bash
-        run: |
-          set -x
-          echo "ANDROID_SDK_ROOT=$HOME/Library/Android/sdk" >> $GITHUB_ENV
       # gradle action loads the dependencies cache only on the first run based on arguments.
       # to control it, we explicitly invoke it once which makes it load the dependencies cache with the parameters
       # we control

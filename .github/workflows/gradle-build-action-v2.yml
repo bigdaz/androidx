@@ -1,0 +1,95 @@
+name: Build with gradle-build-action
+on:
+  push:
+  pull_request:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      gradlew_flags: ${{ steps.global-constants.outputs.gradlew_flags }}
+      checkout_ref: ${{ steps.checkout-args.outputs.ref }}
+      checkout_repo: ${{ steps.checkout-args.outputs.repository }}
+    steps:
+      - name: "Setup global constants"
+        id: global-constants
+        run: |
+          set -x
+          GRADLEW_FLAGS="-Dorg.gradle.internal.http.connectionTimeout=60000 \
+            -Dorg.gradle.internal.http.socketTimeout=60000                  \
+            -Dorg.gradle.internal.repository.max.retries=20                 \
+            -Dorg.gradle.internal.repository.initial.backoff=500            \
+            -Dorg.gradle.jvmargs=-XX:MaxMetaspaceSize=512m                  \
+            --no-configuration-cache                                        \
+            --stacktrace"
+          echo "::set-output name=gradlew_flags::$GRADLEW_FLAGS"
+      - name: "Compute actions/checkout arguments"
+        id: checkout-args
+        run: |
+          set -x
+
+          REF=${{ github.event.pull_request.head.ref }}
+          if [ -z "$REF" ]; then
+            REF=${{ github.event.ref }}
+          fi
+          echo "::set-output name=ref::$REF"
+
+          REPOSITORY=${{ github.event.pull_request.head.repo.full_name }}
+          if [ -z "$REPOSITORY" ]; then
+            REPOSITORY=${{ github.repository }}
+          fi
+          echo "::set-output name=repository::$REPOSITORY"
+
+      - name: Publish build scans link
+        run: echo "::notice ::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
+
+  playground-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        project: ["activity", "biometric", "compose-runtime", "datastore", "fragment", "lifecycle", "navigation", "paging", "room", "work"]
+        include:
+          - project: "compose-runtime"
+            project-root: "compose/runtime"
+    runs-on: ${{ matrix.os }}
+    needs: [setup]
+    env:
+      artifact-id: ${{matrix.project}}
+      project-root: ${{matrix.project-root || matrix.project}}
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+    steps:
+      - name: "Checkout androidx repo"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.setup.outputs.checkout_ref }}
+          repository: ${{ needs.setup.outputs.checkout_repo }}
+          fetch-depth: 1
+      - name: "Setup JDK 8 for tools.jar"
+        id: setup-java8
+        uses: actions/setup-java@v1
+        with:
+          java-version: "8"
+      - name: "set tools jar path"
+        id: setup-tools-jar
+        run: |
+          set -x
+          TOOLS_JAR=$JAVA_HOME/lib/tools.jar
+          echo "::set-output name=toolsJar::$TOOLS_JAR"
+      - name: "Setup JDK 11"
+        id: setup-java
+        uses: actions/setup-java@v1
+        with:
+          java-version: "11"
+      - name: "Setup Gradle"
+        uses: gradle/gradle-build-action@strict-cache-match
+        with:
+          gradle-home-cache-strict-match: true
+
+      - name: "./gradlew clean buildOnServer"
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+          JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
+        working-directory: ${{ env.project-root }}
+        run: ./gradlew clean buildOnServer --no-build-cache --no-configuration-cache
+

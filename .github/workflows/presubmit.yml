@@ -1,6 +1,5 @@
 name: AndroidX Presubmits
 on:
-  push:
   pull_request:
 
 jobs:

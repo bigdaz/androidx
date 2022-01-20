@@ -24,7 +24,7 @@ jobs:
             --stacktrace"
           echo "::set-output name=gradle_flags::$GRADLE_FLAGS"
       - name: Publish build scans link
-        run: echo "::notice ::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
+        run: echo "::notice title=All build scans for workflow::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
 
   playground-build:
     strategy:

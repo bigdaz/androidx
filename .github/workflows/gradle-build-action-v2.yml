@@ -9,7 +9,20 @@ env:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      gradle_flags: ${{ steps.gradle-flags.outputs.gradle_flags }}
     steps:
+      - name: "Setup Gradle flags"
+        id: gradle-flags
+        run: |
+          set -x
+          GRADLE_FLAGS="-Dorg.gradle.internal.http.connectionTimeout=60000 \
+            -Dorg.gradle.internal.http.socketTimeout=60000                 \
+            -Dorg.gradle.internal.repository.max.retries=20                \
+            -Dorg.gradle.internal.repository.initial.backoff=500           \
+            --no-configuration-cache                                       \
+            --stacktrace"
+          echo "::set-output name=gradle_flags::$GRADLE_FLAGS"
       - name: Publish build scans link
         run: echo "::notice ::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
 
@@ -59,5 +72,5 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         working-directory: ${{ env.project-root }}
-        run: ./gradlew clean buildOnServer --no-configuration-cache
+        run: ./gradlew clean buildOnServer ${{ needs.setup.outputs.gradle_flags }}
 

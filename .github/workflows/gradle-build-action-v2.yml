@@ -66,12 +66,13 @@ jobs:
       - name: "Setup Gradle"
         uses: gradle/gradle-build-action@strict-cache-match
         with:
+          gradle-version: "7.3.3"
           gradle-home-cache-strict-match: true
 
-      - name: "./gradlew clean buildOnServer"
+      - name: "gradle clean buildOnServer"
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         working-directory: ${{ env.project-root }}
-        run: ./gradlew clean buildOnServer ${{ needs.setup.outputs.gradle_flags }}
+        run: gradle clean buildOnServer ${{ needs.setup.outputs.gradle_flags }}
 

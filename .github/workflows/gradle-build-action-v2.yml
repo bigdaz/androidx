@@ -68,7 +68,6 @@ jobs:
         with:
           gradle-version: "7.3.3"
           gradle-home-cache-strict-match: true
-          cache-write-only: true
 
       - name: "gradle clean buildOnServer"
         env:

@@ -68,6 +68,8 @@ jobs:
         with:
           gradle-version: "7.3.3"
           gradle-home-cache-strict-match: true
+          gradle-home-cache-excludes: |
+                    ["caches/jars-*"]
 
       - name: "gradle clean buildOnServer"
         env:

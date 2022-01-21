@@ -70,6 +70,7 @@ jobs:
           gradle-home-cache-strict-match: true
           gradle-home-cache-excludes: |
             caches/jars-9
+            caches/transforms-3
 
       - name: "gradle clean buildOnServer"
         env:

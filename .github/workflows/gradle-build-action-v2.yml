@@ -78,5 +78,5 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         working-directory: ${{ env.project-root }}
-        run: gradle clean buildOnServer zipTestConfigsWithApks ${{ needs.setup.outputs.gradle_flags }}
+        run: gradle clean buildOnServer zipTestConfigsWithApks test ${{ needs.setup.outputs.gradle_flags }}
 

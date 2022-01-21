@@ -1,6 +1,4 @@
-# Bump
 name: Build with gradle-build-action
-
 on:
   push:
   pull_request:
@@ -12,23 +10,40 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      gradle_flags: ${{ steps.gradle-flags.outputs.gradle_flags }}
+      gradlew_flags: ${{ steps.global-constants.outputs.gradlew_flags }}
+      checkout_ref: ${{ steps.checkout-args.outputs.ref }}
+      checkout_repo: ${{ steps.checkout-args.outputs.repository }}
     steps:
-      - name: "Setup Gradle flags"
-        id: gradle-flags
+      - name: "Setup global constants"
+        id: global-constants
         run: |
           set -x
-          GRADLE_FLAGS="-Dorg.gradle.internal.http.connectionTimeout=60000 \
-            -Dorg.gradle.internal.http.socketTimeout=60000                 \
-            -Dorg.gradle.internal.repository.max.retries=20                \
-            -Dorg.gradle.internal.repository.initial.backoff=500           \
-            --no-configuration-cache                                       \
+          GRADLEW_FLAGS="-Dorg.gradle.internal.http.connectionTimeout=60000 \
+            -Dorg.gradle.internal.http.socketTimeout=60000                  \
+            -Dorg.gradle.internal.repository.max.retries=20                 \
+            -Dorg.gradle.internal.repository.initial.backoff=500            \
             --stacktrace"
-          echo "::set-output name=gradle_flags::$GRADLE_FLAGS"
+          echo "::set-output name=gradlew_flags::$GRADLEW_FLAGS"
+      - name: "Compute actions/checkout arguments"
+        id: checkout-args
+        run: |
+          set -x
+
+          REF=${{ github.event.pull_request.head.ref }}
+          if [ -z "$REF" ]; then
+            REF=${{ github.event.ref }}
+          fi
+          echo "::set-output name=ref::$REF"
+
+          REPOSITORY=${{ github.event.pull_request.head.repo.full_name }}
+          if [ -z "$REPOSITORY" ]; then
+            REPOSITORY=${{ github.repository }}
+          fi
+          echo "::set-output name=repository::$REPOSITORY"
       - name: Publish build scans link
         run: echo "::notice title=All build scans for workflow::https://ge.androidx.dev/scans?search.names=CI%20run&search.values=$GITHUB_RUN_ID"
 
-  playground-build:
+  build-modules:
     strategy:
       fail-fast: false
       matrix:
@@ -37,16 +52,21 @@ jobs:
         include:
           - project: "compose-runtime"
             project-root: "compose/runtime"
-    runs-on: ${{ matrix.os }}
+          - project: "navigation"
+            custom-os: "macos-latest" # run one of them on a mac to ensure mac setup works
+    runs-on: ${{ matrix.custom-os || matrix.os }}
     needs: [setup]
     env:
       artifact-id: ${{matrix.project}}
       project-root: ${{matrix.project-root || matrix.project}}
+      GRADLE_BUILD_CACHE_PASSWORD: ${{ secrets.GRADLE_BUILD_CACHE_PASSWORD }}
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
     steps:
       - name: "Checkout androidx repo"
         uses: actions/checkout@v2
         with:
+          ref: ${{ needs.setup.outputs.checkout_ref }}
+          repository: ${{ needs.setup.outputs.checkout_repo }}
           fetch-depth: 1
       - name: "Setup JDK 8 for tools.jar"
         id: setup-java8
@@ -64,6 +84,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: "11"
+
+      - name: "Set environment variables"
+        shell: bash
+        run: |
+          set -x
+          echo "DIST_DIR=$HOME/dist" >> $GITHUB_ENV
       - name: "Setup Gradle"
         uses: gradle/gradle-build-action@strict-cache-match
         with:
@@ -73,10 +99,24 @@ jobs:
             caches/jars-9
             caches/transforms-3
 
-      - name: "gradle clean buildOnServer"
+      - name: "gradle buildOnServer zipTestConfigsWithApks test"
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
           JAVA_TOOLS_JAR: ${{ steps.setup-tools-jar.outputs.toolsJar }}
         working-directory: ${{ env.project-root }}
-        run: gradle clean buildOnServer zipTestConfigsWithApks test ${{ needs.setup.outputs.gradle_flags }}
+        run: gradle buildOnServer zipTestConfigsWithApks test ${{ needs.setup.outputs.gradlew_flags }}
 
+      - name: "Upload build artifacts"
+        continue-on-error: true
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts_${{ env.artifact-id }}
+          path: ~/dist
+      - name: "Upload daemon logs"
+        continue-on-error: true
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: gradle-daemon-logs_${{ env.artifact-id }}
+          path: ~/.gradle/daemon
